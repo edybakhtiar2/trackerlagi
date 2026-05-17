@@ -9,7 +9,7 @@ import datetime
 # 1. SETUP DATABASE SQLITE
 # ==========================================
 SQLALCHEMY_DATABASE_URL = "postgresql+psycopg2://neondb_owner:npg_q91fhVloIOZi@ep-silent-glitter-aord7xmk-pooler.c-2.ap-southeast-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
-engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
+engine = create_engine(SQLALCHEMY_DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
