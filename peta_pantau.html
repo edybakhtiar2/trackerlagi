@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard Pemantau GPS</title>
+    <!-- CSS & JS untuk Leaflet Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
+        #map { height: 500px; width: 100%; border-radius: 10px; margin-top: 10px; }
+        .info { padding: 10px; background: #e8f4f8; border-radius: 5px; }
+    </style>
+</head>
+<body>
+    <h2>🗺️ Dashboard Pemantauan Klien</h2>
+    <div class="info" id="info-teks">Memuat data lokasi...</div>
+    <div id="map"></div>
+
+    <script>
+        const SERVER_URL = "https://trackerlagi.vercel.app/api/location"; 
+        const DEVICE_ID = "perangkat_01"; // Harus sama dengan klien
+        
+        // Inisialisasi peta (default ke koordinat Jakarta)
+        let map = L.map('map').setView([-6.2088, 106.8456], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap'
+        }).addTo(map);
+
+        let marker;
+
+        function ambilLokasiTerbaru() {
+            fetch(`${SERVER_URL}/${DEVICE_ID}`)
+                .then(response => response.json())
+                .then(data => {
+                    const lat = data.lat;
+                    const lng = data.lng;
+                    const waktu = new Date(data.time).toLocaleString();
+
+                    document.getElementById("info-teks").innerText = 
+                        `📍 Lokasi terakhir: Lat ${lat}, Lng ${lng} (Diperbarui: ${waktu})`;
+
+                    // Update atau buat marker di peta
+                    if (marker) {
+                        marker.setLatLng([lat, lng]);
+                    } else {
+                        marker = L.marker([lat, lng]).addTo(map);
+                    }
+                    map.setView([lat, lng], 16); // Pusatkan peta ke target
+                })
+                .catch(error => {
+                    document.getElementById("info-teks").innerText = "❌ Gagal mengambil data dari server.";
+                });
+        }
+
+        // Ambil data setiap 5 detik
+        setInterval(ambilLokasiTerbaru, 5000);
+        ambilLokasiTerbaru();
+    </script>
+</body>
+</html>

